@@ -1,5 +1,0 @@
- - read in the X matrix and the Y vector as gsl_matrix and gsl_vector from files
- - this function needs two additional input parameters: number of observations and number of features
- - allocate space for the vector of estimated parameters
- - do the matrix operations 
-        betas = inv(t(X)X)t(X)y
