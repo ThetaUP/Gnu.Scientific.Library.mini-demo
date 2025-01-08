@@ -9,4 +9,4 @@ be found in their respective directories here in this repository.
 ## 'Bigger' programmes
 Some more elaborate programmes are included to demonstrate the combined usage of the functions introduced in the guide.
 The current list of examples:  
-    - LINEAR_REGRESSION/OLS.c
+    - LINEAR_REGRESSION/OLS_Script.c
