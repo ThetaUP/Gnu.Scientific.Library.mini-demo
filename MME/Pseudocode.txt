@@ -1,0 +1,30 @@
+Pseudocode for single trait mixed model without genotypes.
+
+mme = function(y, X, Z, A, sigma2_a, sigma2_e) {
+    alpha = sigma2_e / sigma2_a
+    invA = ginv(A)
+    C = rbind(
+        cbind(t(X)%*%X, t(X)%*%Z),
+        cbind(t(Z)%*%X, t(Z)%*%Z+invA*c(alpha))
+        )
+    rhs = rbind(t(X)%*%y, t(Z)%*%y)
+    invC = ginv(C)
+    estimators = invC%*%rhs
+    list(C = C, est = estimators)
+}
+
+
+Params:
+    N --> total num of cows
+    N_pheno --> number of phenotyped cows (N_pheno <= N)
+    y
+    X
+    Z
+    A 
+    sigma2_a
+    sigma2_e
+
+How to do the C matrix?:
+    - get the sizes of the 4 elements (C11, C12, C21, C22)
+    - then loop over i,j and based on these values populate the C matrix
+    - do the rhs similarly but it will be easier, because this is a 1D vector
