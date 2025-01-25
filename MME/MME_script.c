@@ -37,41 +37,38 @@ int main(){
     gsl_vector_fread(y_f, y);
 
     //allocate space for C matrix
-    /*
-    dim(C11) = N_fixed_effects x N_fixed_effects
-    dim(C12) = N_fixed_effects x N_total
-    dim(C21) = N_total x N_fixed_effects
-    dim(C22) = N_total x N_total
-    dim(C) = (N_total + N_fixed_efdfects) x (N_total + N_fixed_efdfects)
-    */
-
     int dim_C = N_total + N_fixed_effects;
     gsl_matrix *C = gsl_matrix_alloc(dim_C, dim_C);
+
+    // allocate space for the submratrices of C
+    gsl_matrix *C11 = gsl_matrix_alloc(N_fixed_effects, N_fixed_effects);
+    gsl_matrix *C12 = gsl_matrix_alloc(N_fixed_effects, N_total);
+    gsl_matrix *C21 = gsl_matrix_alloc(N_total, N_fixed_effects);
+    gsl_matrix *C22 = gsl_matrix_alloc(N_total, N_total);
+
+    // perform the arithemtics
+    /*
+        t(X)%*%X -->  for C11   * save under a different name that C11 !!!
+        t(X)%*%Z -->  for C22
+        t(Z)%*%X --> for C21
+        t(Z)%*%Z+invA*c(alpha) -->  for C22
+    */
+
+    // populate the submatrices of C
+    /*
+        Do it like this (example for C11):
+            for(i = 0, i < N_fixed_effects):
+                for(j = 0, j < N_fixed_effects):
+                    gsl_matrix_set(C11, i, j, gsl_matrix_get(t(X)%*%X, i, j))
+
+    */
     
-    // initilize the C matrix
-    int i,j;
+    // populate the C matrix
+    /*
+        Do it as shown in the pdf which is in the same directory.
+    */
 
-    for(i=0;i<dim_C;i++){
-        for(j=0;j<dim_C;j++){
-
-            if(i>=0 && i<N_fixed_effects && j>=0 && j<N_fixed_effects){ // here we are in the C11 region
-                // here do t(X)%*%X and save it to the correct region of C
-            }
-
-            if(i>=0 && i<N_fixed_effects && j>=N_fixed_effects && j<dim_C){ // here we are in the C12 region
-                // here do t(X)%*%Z and save it to the correct region of C
-            }
-
-            if(i>=N_fixed_effects && i<dim_C && j>=0 && j<=N_fixed_effects){ // here we are in the C21 region
-                // here do t(Z)%*%X and save it to the correct region of C
-            }
-
-            if(i>=N_fixed_effects && i<dim_C && j>=N_fixed_effects && j<dim_C){ // here we are in the C22 region
-                // here do t(Z)%*%Z+invA*c(alpha) and save it to the correct region of C
-            }
-        }
-    }
-    
+        
 
     return(0);
 }
