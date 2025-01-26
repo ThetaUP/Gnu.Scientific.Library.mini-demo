@@ -48,20 +48,15 @@ int main(){
 
     // perform the arithemtics
     /*
-        t(X)%*%X -->  for C11   * save under a different name that C11 !!!
+        t(X)%*%X -->  for C11   (DONE)
         t(X)%*%Z -->  for C22
         t(Z)%*%X --> for C21
         t(Z)%*%Z+invA*c(alpha) -->  for C22
     */
-
-    // populate the submatrices of C
-    /*
-        Do it like this (example for C11):
-            for(i = 0, i < N_fixed_effects):
-                for(j = 0, j < N_fixed_effects):
-                    gsl_matrix_set(C11, i, j, gsl_matrix_get(t(X)%*%X, i, j))
-
-    */
+    gsl_matrix *X_T = gsl_matrix_alloc(N_fixed_effects, N_pheno);
+    int status;
+    status = gsl_matrix_transpose_memcpy(X_T, X);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, X_T, X, 0.0, C11); //t(X)%*%X -->  for C11
     
     // populate the C matrix
     /*
