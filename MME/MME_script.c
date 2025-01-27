@@ -49,15 +49,22 @@ int main(){
     // perform the arithemtics
     /*
         t(X)%*%X -->  for C11   (DONE)
-        t(X)%*%Z -->  for C22
-        t(Z)%*%X --> for C21
+        t(X)%*%Z -->  for C22    (DONE)
+        t(Z)%*%X --> for C21     (DONE)
         t(Z)%*%Z+invA*c(alpha) -->  for C22
     */
     gsl_matrix *X_T = gsl_matrix_alloc(N_fixed_effects, N_pheno);
     int status;
     status = gsl_matrix_transpose_memcpy(X_T, X);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, X_T, X, 0.0, C11); //t(X)%*%X -->  for C11
+
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, X_T, Z, 0.0, C12); //t(X)%*%Z -->  for C12
+
+    gsl_matrix *Z_T = gsl_matrix_alloc(N_total, N_pheno);
+    status = gsl_matrix_transpose_memcpy(Z_T, Z);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Z_T, X, 0.0, C21); //t(Z)%*%X -->  for C21
     
+
     // populate the C matrix
     /*
         Do it as shown in the pdf which is in the same directory.
