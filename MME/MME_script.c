@@ -51,7 +51,7 @@ int main(){
         t(X)%*%X -->  for C11   (DONE)
         t(X)%*%Z -->  for C22    (DONE)
         t(Z)%*%X --> for C21     (DONE)
-        t(Z)%*%Z+invA*c(alpha) -->  for C22
+        t(Z)%*%Z+invA*c(alpha) -->  for C22 (DONE)
     */
     gsl_matrix *X_T = gsl_matrix_alloc(N_fixed_effects, N_pheno);
     int status;
@@ -63,6 +63,35 @@ int main(){
     gsl_matrix *Z_T = gsl_matrix_alloc(N_total, N_pheno);
     status = gsl_matrix_transpose_memcpy(Z_T, Z);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Z_T, X, 0.0, C21); //t(Z)%*%X -->  for C21
+
+    gsl_matrix *ZTZ = gsl_matrix_alloc(N_total, N_total);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Z_T, Z, 0.0, ZTZ);  //t(Z)%*%Z
+    
+    // invert the A matrix
+    gsl_matrix *LU_decomp_MAT = gsl_matrix_alloc(N_total,N_total);
+    gsl_matrix_memcpy(LU_decomp_MAT, A);
+    int sign;
+    gsl_permutation * perm_vec = gsl_permutation_alloc(N_total);
+    gsl_linalg_LU_decomp(LU_decomp_MAT, perm_vec, &sign);
+    gsl_matrix *A_inv = gsl_matrix_alloc(N_total, N_total);
+    gsl_linalg_LU_invert(LU_decomp_MAT, perm_vec, A_inv); 
+
+    // multiply A_inv by the scalar sigma_a
+    int i,j;
+    for(i=0;i<N_total;i++){
+        for(j=0;j<N_total;j++){
+            gsl_matrix_set(A_inv, i, j, gsl_matrix_get(A_inv, i, j)*sigma_a);
+        }
+    }
+
+    // C22 = t(Z)%*%Z %*% A_inv*sigma_a
+    gsl_matrix_add(ZTZ, A_inv); // the results of this matrix addition is stored in ZTZ, we will rename it for clarity
+    for(i=0;i<N_total;i++){
+        for(j=0;j<N_total;j++){
+            gsl_matrix_set(C22,i,j,gsl_matrix_get(ZTZ,i,j));
+        }
+    }
+
     
 
     // populate the C matrix
