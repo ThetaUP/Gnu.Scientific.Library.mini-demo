@@ -92,12 +92,55 @@ int main(){
         }
     }
 
-    
-
+    int k,l;
     // populate the C matrix
-    /*
-        Do it as shown in the pdf which is in the same directory.
-    */
+        // populate the C11 region
+    k = 0;
+    l = 0;
+    for(i=0;i<N_fixed_effects;i++){
+        for(j=0;j<N_fixed_effects;j++){
+            gsl_matrix_set(C,i,j,gsl_matrix_get(C11,k,l));
+            l = l + 1;
+        }
+        k = k + 1;
+        l = 0;
+    }
+
+        // populate the C12 region
+    k = 0;
+    l = 0;
+    for(i=0;i<N_fixed_effects;i++){
+        for(j=N_fixed_effects;j<dim_C;j++){
+            gsl_matrix_set(C,i,j,gsl_matrix_get(C12,k,l));
+            l = l + 1;
+        }
+        k = k + 1;
+        l = 0;
+    }
+
+        //populate the C21 region
+    k = 0;
+    l = 0;
+    for(i=N_fixed_effects;i<dim_C;i++){
+        for(j=0;j<N_fixed_effects;j++){
+            gsl_matrix_set(C,i,j,gsl_matrix_get(C21,k,l));
+            l = l + 1;
+        }
+        k = k + 1;
+        l = 0;
+    }
+
+        //populate the C22 region
+    k = 0;
+    l = 0;
+    for(i=N_fixed_effects;i<dim_C;i++){
+        for(j=N_fixed_effects;j<dim_C;j++){
+            gsl_matrix_set(C,i,j,gsl_matrix_get(C22,k,l));
+            l = l + 1;
+        }
+        k = k + 1;
+        l = 0;
+    }
 
         
 
