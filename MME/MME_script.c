@@ -1,5 +1,3 @@
-// this is unfinished
-
 #include <stdio.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
@@ -46,13 +44,7 @@ int main(){
     gsl_matrix *C21 = gsl_matrix_alloc(N_total, N_fixed_effects);
     gsl_matrix *C22 = gsl_matrix_alloc(N_total, N_total);
 
-    // perform the arithemtics
-    /*
-        t(X)%*%X -->  for C11   (DONE)
-        t(X)%*%Z -->  for C22    (DONE)
-        t(Z)%*%X --> for C21     (DONE)
-        t(Z)%*%Z+invA*c(alpha) -->  for C22 (DONE)
-    */
+    
     gsl_matrix *X_T = gsl_matrix_alloc(N_fixed_effects, N_pheno);
     int status;
     status = gsl_matrix_transpose_memcpy(X_T, X);
@@ -142,7 +134,55 @@ int main(){
         l = 0;
     }
 
-        
+    // define the right hand side vector
+    gsl_vector *RHS = gsl_vector_alloc(dim_C);
+    
+    // define the components of the right hand side vector
+    gsl_vector *RHS_top = gsl_vector_alloc(N_fixed_effects);
+    gsl_vector *RHS_bottom = gsl_vector_alloc(N_total);
+    double alpha_param = 1.0;
+    double beta_param = 0.0;
+    gsl_blas_dgemv(CblasNoTrans, alpha_param, X_T, y, beta_param, RHS_top);
+    gsl_blas_dgemv(CblasNoTrans, alpha_param, Z_T, y, beta_param, RHS_bottom);
 
+    for(i=0;i<N_fixed_effects;i++){
+        gsl_vector_set(RHS,i,gsl_vector_get(RHS_top,i));
+    }
+
+    i = 0;
+    for(j=(N_fixed_effects+1);j<N_total;j++){
+        gsl_vector_set(RHS,j,gsl_vector_get(RHS_bottom,i));
+        i = i + 1;
+    }
+
+
+    // solve the MM equation
+        // invert the C matrix
+    gsl_matrix *LU_decomp_MAT2 = gsl_matrix_alloc(dim_C,dim_C);
+    gsl_matrix_memcpy(LU_decomp_MAT2, C);
+    gsl_permutation * perm_vec2 = gsl_permutation_alloc(dim_C);
+    int sign2;
+    gsl_linalg_LU_decomp(LU_decomp_MAT2, perm_vec2, &sign2);
+    gsl_matrix *C_inv = gsl_matrix_alloc(dim_C, dim_C);
+    gsl_linalg_LU_invert(LU_decomp_MAT2, perm_vec2, C_inv);
+
+        // solve the equation
+    gsl_vector *solutions = gsl_vector_alloc(dim_C);
+    gsl_blas_dgemv(CblasNoTrans, alpha_param, C_inv, RHS, beta_param, solutions);
+
+
+    // write the solutions to a file
+    FILE * output_file;
+    output_file = fopen("solutions.txt", "w");
+    double element;
+
+    for(i=0;i<dim_C;i++){
+        element = gsl_vector_get(solutions,i);
+        fprintf(output_file, "%g\n", element);
+    }
+
+    fclose(output_file);
+
+    printf("All done. The solutions are in solutions.txt\n");
     return(0);
 }
